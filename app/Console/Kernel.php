@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->job(new ProcessJohnsHopkinsCSSE)->everyFiveMinutes();
+        $schedule->job(new ProcessJohnsHopkinsCSSE)->everyMinute();
     }
 
     /**

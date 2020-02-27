@@ -12,16 +12,26 @@ class InfectionUpdateToSlack extends Notification
 {
     use Queueable;
 
-    private $content;
+    private $country;
+    private $state;
+    private $confirmed;
+    private $infected;
+    private $recovered;
+    private $deaths;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($content)
+    public function __construct($country,$state,$confirmed,$infected,$recovered,$deaths)
     {
-        $this->content = $content;
+        $this->country = $country;
+        $this->state = $state;
+        $this->confirmed = $confirmed;
+        $this->infected = $infected;
+        $this->recovered = $recovered;
+        $this->deaths = $deaths;
     }
 
     /**
@@ -44,7 +54,21 @@ class InfectionUpdateToSlack extends Notification
     public function toSlack($notifiable)
     {
         return (new SlackMessage)
-                ->content($this->content);
+                ->success()
+                ->content("Nova Atualização")
+                ->attachment(function ($attachment) {
+                    $attachment->title($this->country)
+                               ->fields([
+                                    'Country' => $this->country,
+                                    'State' => $this->state,
+                                    'Confirmed' => $this->confirmed,
+                                    'Infected' => $this->infected,
+                                    'Recovered' => $this->recovered,
+                                    'Deaths' => $this->deaths,
+                                ]);
+                });
+
+                
     }
     /**
      * Get the array representation of the notification.

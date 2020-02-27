@@ -35,47 +35,47 @@ class AnalyseData implements ShouldQueue
     {
         $region = Intel::select(["country","state"])->groupBy(["country","state"])->get();
         foreach ($region as $element) {
-            $data = Intel::where('country', $element->country)->where('state',$element->state)->orderBy('created_at','desc')->limit(2)->get();
+            $data = Intel::where('country', $element->country)->where('state', $element->state)->orderBy('created_at', 'desc')->limit(2)->get();
+            $infected = [
+                0 => $data[0]->confirmed - $data[0]->recovered - $data[0]->deaths,
+                1 => $data[1]->confirmed - $data[1]->recovered - $data[1]->deaths
+            ];
             $delta_confirmed = $data[0]->confirmed - $data[1]->confirmed;
+            $delta_infected = $infected[0] - $infected[1];
             $delta_recovered = $data[0]->recovered - $data[0]->recovered;
             $delta_deaths = $data[0]->deaths - $data[0]->deaths;
-            $text = "";
-            $send = false;
-            if($element->state) {
-                $text = $element->state . ", " . $element->country;
-            }
-            else {
-                $text = $element->country;
-            }
-            $text .= ": ";
-            if($delta_confirmed != 0) {
-                if($delta_confirmed > 0) {
+
+            if ($delta_confirmed != 0 || $delta_infected != 0 || $delta_recovered != 0 || $delta_deaths != 0) {
+                $confirmed_text = "";
+                $infected_text = "";
+                $recovered_text = "";
+                $deaths_text = "";
+                if ($delta_confirmed > 0) {
                     $delta_confirmed = "+".$delta_confirmed;
+                } elseif ($delta_confirmed == 0) {
+                    $delta_confirmed = "=";
                 }
-                $text .= "Confirmed: ".$delta_confirmed . ", ";
-                $send = true;
-            }
-            if($delta_recovered != 0) {
-                if($delta_recovered > 0) {
+                $confirmed_text = $data[0]->confirmed . " (".$delta_confirmed.")";
+                if ($delta_infected > 0) {
+                    $delta_infected = "+".$delta_infected;
+                } elseif ($delta_infected == 0) {
+                    $delta_infected = "=";
+                }
+                $infected_text .= $infected . " (".$delta_infected.")";
+                if ($delta_recovered > 0) {
                     $delta_recovered = "+".$delta_recovered;
+                } elseif ($delta_recovered == 0) {
+                    $delta_recovered = "=";
                 }
-                $text .= "Recovered: ".$delta_recovered. ", ";
-                $send = true;
-            } 
-            if($delta_deaths != 0) {
-                if($delta_deaths > 0) {
+                $recovered_text = $data[0]->recovered . " (".$delta_recovered.")";
+                if ($delta_deaths > 0) {
                     $delta_deaths = "+".$delta_deaths;
+                } elseif ($delta_recovered == 0) {
+                    $delta_recovered = "=";
                 }
-                $text .= "Deaths: ".$delta_deaths. ", ";
-                $send = true;
-            }
-            if($send) {
-                $infected = $data[0]->confirmed - $data[0]->recovered - $data[0]->deaths;
-                $text .= "Remaining Infected: ". $infected;
-                $text .= " (Confirmed: ".$data[0]->confirmed.", Recovered: ".$data[0]->recovered.", Deaths: ".$data[0]->deaths.")";             
-                $data[0]->notify(new InfectionUpdateToSlack($text));
+                $deaths_text = $data[0]->deaths . " (".$delta_deaths.")";
+                $data[0]->notify(new InfectionUpdateToSlack($element->country, $element->state, $confirmed_text, $infected_text, $recovered_text, $deaths_text));
             }
         }
-
     }
 }
