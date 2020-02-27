@@ -10,11 +10,3 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('viewer');
-});
-
-Route::get('/active', 'DataController@active')->name('active');
-Route::get('/all', 'DataController@all')->name('active');
-Route::get('/fetch/{country}', 'DataController@byCountry')->name('active');
