@@ -51,9 +51,11 @@ class AnalyseData implements ShouldQueue
                 $delta_recovered = $data[0]->recovered - $data[1]->recovered;
                 $delta_deaths = $data[0]->deaths - $data[1]->deaths;
             } else {
-                $infected =  $data[0]->confirmed - $data[0]->recovered - $data[0]->deaths;
+                $infected = [
+                    0 => $data[0]->confirmed - $data[0]->recovered - $data[0]->deaths
+                ];
                 $delta_confirmed = $data[0]->confirmed;
-                $delta_infected = $infected;
+                $delta_infected = $infected[0];
                 $delta_recovered = $data[0]->recovered;
                 $delta_deaths = $data[0]->deaths;
             }
